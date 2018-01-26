@@ -35,8 +35,8 @@ If you do not have brew, then install it. You can find more detail instructions 
 You could build and run from Xcode. Or, you could use:
 
 ```bash
-vapor build
-vapor run
+$ vapor build
+$ vapor run
 ```
 
 
