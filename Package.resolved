@@ -51,7 +51,7 @@
         "repositoryURL": "https://github.com/vapor/engine.git",
         "state": {
           "branch": "beta",
-          "revision": "c2b98bc5b072cdbcc9e80598eb421ef7c259b930",
+          "revision": "0be1a87f70eb139367f3859c304548b39c3376fa",
           "version": null
         }
       },
@@ -70,6 +70,15 @@
         "state": {
           "branch": "beta",
           "revision": "6cb278d04a53ff84ba69538df60b343c120f2503",
+          "version": null
+        }
+      },
+      {
+        "package": "JWT",
+        "repositoryURL": "https://github.com/vapor/jwt.git",
+        "state": {
+          "branch": "beta",
+          "revision": "6f09717ccab8033cb684751cb235bbefbe56b472",
           "version": null
         }
       },
