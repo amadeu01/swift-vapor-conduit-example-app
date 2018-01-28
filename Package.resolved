@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/vapor/async.git",
         "state": {
           "branch": "beta",
-          "revision": "00635c9d426a68c65de680a0eebbddf1329b9d7e",
+          "revision": "73369be680cc32a71c085b37142f5ccb18301102",
           "version": null
         }
       },
@@ -24,7 +24,7 @@
         "repositoryURL": "https://github.com/vapor/core.git",
         "state": {
           "branch": "beta",
-          "revision": "802df4360b0e84c3915e1b034d8e98af992c3b1e",
+          "revision": "25624927fac04de654b263d8d6ff05864e9608d7",
           "version": null
         }
       },
