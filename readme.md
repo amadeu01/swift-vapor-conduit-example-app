@@ -30,6 +30,13 @@ $ brew install vapor/tap/vapor
 
 If you do not have brew, then install it. You can find more detail instructions on [here](https://brew.sh/)
 
+You can update the dependencies and generate a Xcode Project by typing.
+
+```bash
+$ vapor update
+```
+It will ask you whether you want to remake a Xcode Project and whether you want to open it. 
+
 ## Build and run
 
 You could build and run from Xcode. Or, you could use:
