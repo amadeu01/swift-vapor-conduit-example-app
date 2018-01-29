@@ -2,7 +2,7 @@ import App
 import Dispatch
 import XCTest
 
-final class AuthenticationTest : XCTestCase {
+final class UserControllerTest : XCTestCase {
     func testNothing() throws {
         XCTAssert(true)
     }
@@ -11,4 +11,5 @@ final class AuthenticationTest : XCTestCase {
         ("testNothing", testNothing),
         ]
 }
+
 

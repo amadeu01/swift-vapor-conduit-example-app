@@ -9,7 +9,12 @@ final class User: Content, Timestampable {
     let email: String
     let username: String
     var hash: String
-    var password: String? {
+    let bio: String
+    let image: String
+    public var createdAt: Date?
+    public var updatedAt: Date?
+    
+    var password: String {
         set {
             let salt: Data = OSRandom().data(count: 32)
             let data = try! PBKDF2<SHA256>.deriveKey(fromPassword: newValue as String!, saltedWith: salt)
@@ -19,10 +24,6 @@ final class User: Content, Timestampable {
             return hash
         }
     }
-    let bio: String
-    let image: String
-    public var createdAt: Date?
-    public var updatedAt: Date?
     
     init(id: Int? = nil, username: String, hash: String, email: String, bio: String, image: String) {
         self.id = id
@@ -62,6 +63,6 @@ extension User: Migration {
     }
     
     static func revert(on connection: Database.Connection) -> Future<Void> {
-        return Database.delete(FollowersAssoc.self, on: connection)
+        return Database.delete(User.self, on: connection)
     }
 }

@@ -5,7 +5,7 @@ import Foundation
 
 final class ArticleController: RouteCollection {
     func index(_ request: Request)throws -> Future<[Article]> {
-        return Package.query(on: request).all()
+        return Article.query(on: request).all()
     }
     
     func create(_ request: Request)throws -> Future<Article> {
@@ -26,20 +26,8 @@ final class ArticleController: RouteCollection {
         return article
     }
     
-    func getByName(_ request: Request)throws -> Future<Article> {
-        let name = try request.parameter(String.self)
-        let article = Article.query(on: request).filter(\Article.name == name)
-        return article.first().map(to: Article.self, { (pack) -> Article in
-            guard let pack = pack else {
-                throw Abort(.notFound)
-            }
-            return pack
-        })
-    }
-    
     func boot(router: Router) throws {
         router.get("articles", use: index)
         router.post("articles", use: create)
-        router.get("articles", String.parameter, use: getByName)
     }
 }
