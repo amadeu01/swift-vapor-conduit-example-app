@@ -46,6 +46,19 @@ $ vapor build
 $ vapor run
 ```
 
+## How to run migration?
+
+You can run the migration by typing
+
+```bash
+$ vapor run prepare
+```
+
+**Atention:** Vapor is using Postgres 10 syntax, then you will need a postgre 10 running to get it working on migration :smile:
+
+Have a look at [this](https://blog.2ndquadrant.com/postgresql-10-identity-columns/) to understand a little better
+
+
 
 
 
