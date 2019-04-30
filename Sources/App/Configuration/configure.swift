@@ -7,19 +7,23 @@ public func configure(
     _ env: inout Environment,
     _ services: inout Services
 ) throws {
-    try services.register(FluentProvider())
     try services.register(FluentPostgreSQLProvider())
     
-    let psqlConfig = PostgreSQLDatabaseConfig(hostname: "localhost", port: 5432, username: "postgres")
-    var dbConfig = DatabaseConfig()
+    let psqlConfig = PostgreSQLDatabaseConfig(
+        hostname: Environment.get("psql_hostname") ?? "localhost",
+        username: Environment.get("psql_username") ?? "postgres",
+        database: Environment.get("psql_database") ?? nil,
+        password: Environment.get("psql_password") ?? nil
+    )
+    let postgresDatabase = PostgreSQLDatabase(config: psqlConfig)
     
-    let database = PostgreSQLDatabase(config: psqlConfig)
-    dbConfig.add(database: database, as: .postgres)
-    services.register(dbConfig)
+    var databases = DatabasesConfig()
+    databases.add(database: postgresDatabase, as: .psql)
+    services.register(databases)
     
     var migirateConfig = MigrationConfig()
-    migirateConfig.add(model: User.self, database: .postgres)
-    migirateConfig.add(model: Profile.self, database: .postgres)
-    migirateConfig.add(model: FollowersAssoc.self, database: .postgres)
+    migirateConfig.add(model: User.self, database: .psql)
+    migirateConfig.add(model: Profile.self, database: .psql)
+    migirateConfig.add(model: FollowersAssoc.self, database: .psql)
     services.register(migirateConfig)
 }

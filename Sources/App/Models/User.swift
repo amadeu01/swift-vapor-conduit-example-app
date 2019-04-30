@@ -1,68 +1,102 @@
 import Vapor
 import FluentPostgreSQL
-import Fluent
-import Foundation
-import Crypto
+import JWT
 
-final class User: Content, Timestampable {
+final class User: PostgreSQLModel {
     var id: Int?
     let email: String
     let username: String
-    var hash: String
+    var password: String
     let bio: String
     let image: String
     public var createdAt: Date?
     public var updatedAt: Date?
     
-    var password: String {
-        set {
-            let salt: Data = OSRandom().data(count: 32)
-            let data = try! PBKDF2<SHA256>.deriveKey(fromPassword: newValue as String!, saltedWith: salt)
-            self.hash = String(bytes: data, encoding: .utf8)!
-        }
-        get {
-            return hash
-        }
-    }
-    
-    init(id: Int? = nil, username: String, hash: String, email: String, bio: String, image: String) {
+    init(id: Int? = nil, username: String, password: String, email: String, bio: String, image: String) {
         self.id = id
         self.username = username
-        self.hash = hash
+        self.password = password
         self.email = email
         self.bio = bio
         self.image = image
     }
 }
 
-extension User: Model {
-    public static var entity: String {
-        return "user"
-    }
-    
-    static var idKey: IDKey {
-        return \.id
-    }
-    
-    typealias Database = PostgreSQLDatabase
-    typealias ID = Int
+extension User: Content {}
+extension User: Migration {}
+extension User: Parameter {}
+
+// JWT
+
+extension User: JWTPayload {
+    func verify(using signer: JWTSigner) throws {}
 }
 
-extension User: Migration {
-    static func prepare(on connection: Database.Connection) -> Future<Void> {
-        return Database.create(User.self, on: connection) { builder in
-            try builder.field(for: \User.id)
-            try builder.field(for: \User.username)
-            try builder.field(for: \User.hash)
-            try builder.field(for: \User.email)
-            try builder.field(for: \User.bio)
-            try builder.field(for: \User.image)
-            try builder.field(for: \User.createdAt)
-            try builder.field(for: \User.updatedAt)
-        }
+// Public
+
+extension User {
+    struct Public: Content {
+        let email: String
+        let bio: String
+        let image: String
     }
     
-    static func revert(on connection: Database.Connection) -> Future<Void> {
-        return Database.delete(User.self, on: connection)
+    func `public`() -> User.Public {
+        return User.Public(email: self.email, bio: self.bio, image: self.image)
+    }
+}
+
+// Register
+
+extension User {
+    struct RegisterForm: Content {
+        let user: Register
+    }
+    
+    struct Register: Content {
+        let username: String
+        let email: String
+        let password: String
+    }
+}
+
+// Login
+
+extension User {
+    struct LoginForm: Content {
+        let user: Login
+    }
+    
+    struct Login: Content {
+        let email: String
+        let password: String
+    }
+}
+
+// User (for authentication)
+
+extension User {
+    struct AuthUserResponse: Content {
+        let user: AuthUser
+    }
+    
+    struct AuthUser: Content {
+        let email: String
+        let token: String
+        let username: String
+        let bio: String
+        let image: String?
+    }
+    
+    func toAuthUser(token: String) -> AuthUserResponse {
+        return AuthUserResponse(
+            user: User.AuthUser(
+                email: self.email,
+                token: token,
+                username: self.username,
+                bio: self.bio,
+                image: self.image
+            )
+        )
     }
 }
