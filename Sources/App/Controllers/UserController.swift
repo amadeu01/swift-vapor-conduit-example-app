@@ -1,45 +1,78 @@
 import Vapor
 import FluentPostgreSQL
 import Fluent
-import Foundation
+import Crypto
+import JWT
 
 final class UserController: RouteCollection {
-    func index(_ request: Request)throws -> Future<[User]> {
-        return User.query(on: request).all()
+    func index(_ request: Request) throws -> Future<[User.Public]> {
+        return User.query(on: request).all().map { userList in
+            userList.map { $0.public() }
+        }
     }
     
-    func create(_ request: Request)throws -> Future<User> {
-        let user = try JSONDecoder().decode(User.self, from: request.body)
-        return user.flatMap(to: User.self, { (user) -> Future<User> in
-            user.save(on: request).transform(to: user)
-        })
+    func create(_ request: Request) throws -> Future<User.Public> {
+        return try request.content.decode(User.RegisterForm.self).flatMap { userForm in
+            let user = User(
+                id: nil,
+                username: userForm.user.username,
+                password: try BCrypt.hash(userForm.user.password),
+                email: userForm.user.email,
+                bio: "",
+                image: ""
+            )
+            
+            return user.save(on: request).map { $0.public() }
+        }
     }
     
-    func getById(_ request: Request)throws -> Future<User> {
-        let id: Int = try request.parameter()
-        let user = User.find(id, on: request).map(to: User.self, { (user) throws -> User in
-            guard let user = user else {
-                throw Abort(.badRequest)
+    func getById(_ request: Request) throws -> Future<User.Public> {
+        return try request.parameters.next(User.self).map { $0.public() }
+    }
+    
+    func login(_ request: Request) throws -> Future<String> {
+        return try request.content.decode(User.LoginForm.self).flatMap { userForm in
+            User
+                .query(on: request)
+                .filter(\User.email, .equal, userForm.user.email)
+                .first()
+                .map { user -> User in
+                
+                    guard
+                        let user = user,
+                        try BCrypt.verify(userForm.user.password, created: user.password )
+                    else {
+                        throw Abort(.unauthorized)
+                    }
+                    
+                    return user
+            }.map { user in
+                let data = try JWT<User>(payload: user).sign(using: .hs256(key: "secret"))
+                return String(data: data, encoding: .utf8) ?? ""
             }
-            return user
-        })
-        return user
+        }
     }
     
-//    func getByUsername(_ request: Request)throws -> Future<User> {
-//        let username = try request.parameter(String.self)
-//        let user = User.query(on: request).filter(\User.username == username)
-//        return user.first().map(to: User.self, { (pack) -> User in
-//            guard let pack = pack else {
-//                throw Abort(.notFound)
-//            }
-//            return pack
-//        })
-//    }
+    func getCurrentUser(_ request: Request) throws -> Future<User.AuthUserResponse> {
+        guard let bearer = request.http.headers.bearerAuthorization else {
+            throw Abort(.unauthorized)
+        }
+        
+        let jwt = try JWT<User>(from: bearer.token, verifiedUsing: .hs256(key: "secret"))
+        return User.query(on: request).filter(\User.email, .equal, jwt.payload.email).first().map { user in
+            guard let user = user else {
+                throw Abort(.internalServerError)
+            }
+            
+            return user.toAuthUser(token: bearer.token)
+        }
+    }
     
     func boot(router: Router) throws {
         router.get("users", use: index)
         router.post("users", use: create)
-//        router.get("users", String.parameter, use: getByUsername)
+        router.get("users", User.parameter, use: getById)
+        router.post("users/login", use: login)
+        router.get("user", use: getCurrentUser)
     }
 }

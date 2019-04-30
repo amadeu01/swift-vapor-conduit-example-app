@@ -9,7 +9,8 @@ final class Routes: RouteCollection {
     }
     
     func boot(router: Router) throws {
-        try router.register(collection: UserController())
-        try router.register(collection: ArticleController())
+        let api = router.grouped("api")
+        try api.register(collection: UserController())
+        try api.register(collection: ArticleController())
     }
 }

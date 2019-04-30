@@ -35,9 +35,9 @@ extension FollowersAssoc: Migration {
     
     static func prepare(on connection: Database.Connection) -> Future<Void> {
         return Database.create(FollowersAssoc.self, on: connection) { builder in
-            try builder.field(for: \FollowersAssoc.id)
-            try builder.field(for: \FollowersAssoc.followerId)
-            try builder.field(for: \FollowersAssoc.followedById)
+            builder.field(for: \FollowersAssoc.id)
+            builder.field(for: \FollowersAssoc.followerId)
+            builder.field(for: \FollowersAssoc.followedById)
         }
     }
     

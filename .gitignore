@@ -12,3 +12,4 @@ xcuserdata
 DerivedData/
 .DS_Store
 
+docker-compose.yml
